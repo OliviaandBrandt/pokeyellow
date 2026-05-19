@@ -6,19 +6,12 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # This runs the build inside a pre-made Game Boy development container
+    container: devkitpro/devkita64:latest
+
     steps:
     - name: Checkout Code Files
       uses: actions/checkout@v4
-
-    - name: Install System Utilities
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y make gcc git build-essential libpng-dev wget
-
-    - name: Load Game Boy Compiler
-      run: |
-        wget https://github.com/gbdev/rgbds/releases/download/v0.7.0/rgbds-0.7.0_amd64.deb
-        sudo dpkg -i rgbds-0.7.0_amd64.deb
 
     - name: Build Graphics Tools
       run: |
@@ -35,5 +28,4 @@ jobs:
         path: |
           *.gbc
           *.sym
-            *.gbc
-            *.sym
+          
