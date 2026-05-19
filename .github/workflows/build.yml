@@ -1,34 +1,38 @@
-name: Build pokeyellow
+name: Build ROM
 
-on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
+on: [push, pull_request, workflow_dispatch]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Check out the repository
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Install required system build tools
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y make build-essential pkg-config
+          sudo apt-get install -y make gcc git build-essential libpng-dev wget
 
-      # Step 3: Set up RGBDS (The Game Boy compiler/assembler)
-      - name: Set up RGBDS
-        uses: gbdev/setup-rgbds@v1
-        with:
-          version: 'v0.5.2' # Pokeyellow typically builds best with v0.5.2 or v0.6.0 depending on your fork's age
-
-      # Step 4: Build the ROM
-      - name: Compile ROM
+      - name: Download and Install Official RGBDS Binary
         run: |
-          make clean
+          # Download pre-compiled Ubuntu binary directly from the official Game Boy dev group
+          wget https://github.com/gbdev/rgbds/releases/download/v0.7.0/rgbds-0.7.0_amd64.deb
+          # Install the package onto GitHub's server
+          sudo dpkg -i rgbds-0.7.0_amd64.deb
+
+      - name: Pre-build Repository Tools
+        run: |
+          make -C tools/
+
+      - name: Build Pokémon Yellow ROM
+        run: |
           make
+          
+      - name: Upload Finished GBC ROM
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokeyellow-rom
+          path: |
+            *.gbc
+            *.sym
